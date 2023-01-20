@@ -1,0 +1,145 @@
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+--【项目文件结构】
+
+	a) 实际【生产】目录：
+		|WWW
+		|---experiment
+		|------course-admin  	<------- [教师端前端]
+		|---------static
+		|---------index.html
+		|------course-manage  	<------- [学生端前端]
+		|---------static
+		|---------index.html
+		|------exserver  		<------- [统一后端]
+	
+	b) 实际【开发】目录：
+		|WWW
+		|---experiment
+		|------course-admin
+		|---------dist	<------- [这是生成的部署文件夹]
+		|------------static
+		|------------index.html
+		|---------build
+		|---------config
+		|---------src
+		|---------static
+		|------course-manage
+		|---------dist  <------- [这是生成的部署文件夹]
+		|------------static
+		|------------index.html
+		|---------build
+		|---------config
+		|---------src
+		|---------static
+		|------exserver
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+--【vue 环境搭建步骤】
+
+	参考链接：https://blog.csdn.net/weixin_30357231/article/details/95082243
+
+	0. 以下安装包都安装在 ‘C:\Users\Wayne Fong\AppData\Roaming\’ 路径下
+
+	1. 登录node官网下载 https://nodejs.org/en/
+
+	2. 安装node 后查看 node和npm的版本（需要手动配置环境变量，直接在dos下查询即可）
+		ps：如果你的npm不是最新版本可以使用 命令: npm install npm -g 升级到最新版本
+
+	3. 测试node，在cmd 下输入node 进入后输入打印语句 console.log("xx"); 
+		注意：连按两次 ctrl + c退出
+
+	4. 测试npm，通过下载常用模块验证npm功能
+		输入命令：npm install express -g --registry=https://registry.npm.taobao.org  
+	 
+	5. 安装cnpm 
+		这个类似与linux中改源，将外国源改为国内源，cnpm是淘宝的npm(如果你有梯子可以忽略)
+		输入命令：npm install –g cnpm --registry=https://registry.npm.taobao.org
+
+	6. 安装其他工具
+		安装webpack ：cnpm install webpack -g
+		命令 > cnpm install webpack -g 
+			出现异常信息：
+			cnpm : 无法加载文件 C:\Users\Wayne Fong\AppData\Roaming\npm\cnpm.ps1，因为在此系统上禁止运行脚本。
+			解决方案：https://www.cnblogs.com/500m/p/11634969.html
+				更改权限为 A
+				命令 > set-ExecutionPolicy RemoteSigned
+				输入：A
+				命令 > get-ExecutionPolicy
+				RemoteSigned
+			
+		安装vue-cli（生成vue模板的工具）：cnpm install vue-cli -g
+	 
+	7. 新建vue项目（通过工具生成）【注：如果已有项目，则跳过第7步】
+		新建一个用于存在vue项目的文件夹，在dos中进入文件夹并输入命令：vue init webpack test1新建项目=
+		说明：最后一步选择No I will handle that myselft，创建完项目后由我自己来下载依赖；
+			  因为国内网络npm下载依赖实在太慢，选择no后我们可以通过自己下载的cnpm来快速安装。
+
+	8. 安装依赖【通常可直接此步】
+		输入命令：cnpm install下载安装项目的依赖 
+		如，在项目根目录输入命令：
+		D:\myPrograms\phpstudy_pro\WWW\experiment\course-admin> cnpm install
+			注：会在当前目录下生成 'node_modules' 的文件夹
+			
+		然后输入命令：cnpm run dev 运行后会给出提示让我们通过浏览器访问。
+		
+	----【至此vue环境搭建成功】----
+
+	9. 启动项目（项目根目录输入命令）
+	  a) 教师端：
+		course-admin> npm run dev
+		Your application is running here: http://localhost:8081
+	  b) 学生端：
+		course-manage> npm run dev
+		Your application is running here: http://localhost:8080
+		
+		
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+--【vue 打包步骤】
+
+	参考链接：https://blog.csdn.net/qq_41115965/article/details/80796310
+	
+	1. 分别在项目根目录 course-admin/ 和 course-manage/ 下打开终端执行命令（shift+鼠标右键 ==> 选择‘在此处打开Powershell窗口’）：
+		course-admin> npm run build
+		course-manage> npm run build
+		会生成 dist 文件夹，包含压缩的 index.html 和 static 文件夹
+
+	2.在打包生成的文件夹 dist 下，修改：
+		1. 删除 dist/index.html 最后的代码 `<script src=./build/build.js></script>`
+		2. 更改 dist/static/js/baseConfig.js 文件
+			window.g = {
+				/*baseUrl:'/api',*/
+				/*baseImge:'http://127.0.0.1/1experiment/exserver'*/
+				baseUrl:'http://127.0.0.1/experiment/exserver/index.php?',
+				baseImge:'http://127.0.0.1/experiment/exserver/'
+			}
+
+	3.浏览器访问地址：
+		开发访问：
+				教师端：http://127.0.0.1:8081/#/login
+				学生端：http://127.0.0.1:8080/#/login
+		部署访问：
+				教师端：http://127.0.0.1/experiment/course-admin/index.html
+					或：http://127.0.0.1/experiment/course-admin/#/login
+					或：如果开发版项目直接在服务器文件夹 'WWW/' 中，生成dist后可访问，实际生产只需要 dist 文件夹下的内容
+					  ：http://127.0.0.1/experiment/course-admin/dist/index.html
+					
+				学生端：http://127.0.0.1/experiment/course-manage/#/index.html
+					或：http://127.0.0.1/experiment/course-manage/#/login
+					或：如果开发版项目直接在服务器文件夹 'WWW/' 中，生成dist后可访问，实际生产只需要 dist 文件夹下的内容
+					  ：http://127.0.0.1/experiment/course-manage/dist/index.html
+
+	4.最后分别将 course-admin/ 和 course-manage/ 下的 dist 文件夹拷贝出，并分别重命名为 course-admin 和 course-manage
+	  作为最后的发布部署文件
+
+	5.测试账号
+		-- 教师测试账号：1000001165 密码：1966424
+		-- 学生测试账号：3160610005 密码：3160610005  表：studentinfo - id:330
+		-- 				3180612006
+						3180612012
+						3180612014

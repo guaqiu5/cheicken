@@ -1,0 +1,80 @@
+.draw_frame {
+	position: relative;
+	left: 5%;
+	/*width: 800px;*/
+	/*height: 800px;*/
+	/*border: 1px solid grey;*/
+}
+.draw_html_origin {
+	left: 0px;
+	top: 0px;
+	/*width: 800px;*//* 动态取 scrollWidth */
+	/*background: lightgrey;*/
+	/*border: 2px solid grey;*/
+}
+.draw_html_edited {
+	position: absolute;
+	float: left;
+	z-index: 1; /* 悬浮于 draw_html_origin 元素之上，draw_canvas 元素之下 */
+	left: 0px;
+	top: 0px;
+	background: white; /* 避免文本截图背景的透明 */
+}
+.draw_canvas {
+	position: absolute;
+	float: left;
+	z-index: 2; /* 悬浮于 draw_html_edited 元素之上 */
+	left: 0px;
+	top: 0px;
+	background: white; /* 避免文本截图背景的透明 */
+}
+.draw_control {
+	/*position: relative;*/
+	left: 0px;
+	width: 400px;
+	height: 70px;
+	/*background: lightgrey;*/
+	/*border: 2px solid grey;*/
+}
+.draw_operate {
+	/*position: absolute;*/
+	padding: 3px;
+	/*top: 0px;*/
+}
+.draw_color_btn {
+	margin: 2px;
+	border: 3px solid grey;
+}
+.draw_history {
+	position: absolute;
+	padding: 2px;
+	top: 60px;
+	left: 2%;
+	right: 2%;
+	/*border: 1px solid red;*/
+}
+.draw_font {
+	margin-top: 20px;
+}
+.draw_img_div {
+	margin-top: 2px;
+	margin-bottom: 20px;
+	padding: 2px;
+	width: 173px;
+	height:200px;
+	/*border: 2px solid grey;*/
+}
+.draw_img {
+	width: 173px;
+	height: 200px;
+}
+.draw_input_text {
+	position: absolute;
+	float: left; /* 元素悬浮 */
+	z-index: 3; /* 悬浮于 canvas 元素之上 */
+	color: red; /* 文本颜色 */
+	font-size: 20px;
+	font-family: SimHei; /* 黑体 */
+	border: 1px solid grey;
+	/*background: lightgrey;*/
+}

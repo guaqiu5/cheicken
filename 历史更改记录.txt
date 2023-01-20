@@ -1,0 +1,751 @@
+########################################################
+################      历史更改记录      ################
+########################################################
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2021-11-13
+--【1】修改学生端“填写实验报告”中的客观题“保存”按钮为保存草稿状态，非提交状态
+-- 更改文件记录：
+	course-manage\src\components\detial-content\excontent.vue
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2021-08-07
+-- 【1】增加客观题和主观题是否启用的按钮，并在客观题和主观题学生作答/查看部分使用策略：未作答时查询启用的题目，已作答时查询已作答的题目
+-- 更改文件记录：
+	course-admin\src\views\course\exprement.vue -- 实验报告模板
+	course-admin\src\api\api.js
+		-- enableObjectiveQuestion 启用/停用实验报告中的客观题
+		-- enableSubjectiveQuestion 启用/停用实验与总结中的主观题
+	course-manage\src\components\detial-content\excontent.vue  -- 客观题/主观题学生作答部分
+	course-manage\src\api\api.js
+		-- getExperimentResult 获取主观题学生作答记录
+	exserver\application\controllers\ExObjectiveQuestion.php
+		-- query0 查询客观题信息
+		-- enable 启用/停用实验报告中的客观题
+		-- queryResult0 查看客观题作答结果（作答前/后） -- 未作答时查询启用的题目，已作答时查询已作答的题目
+	exserver\application\controllers\Exconclusion.php
+		-- enable 启用/停用实验与总结中的主观题
+		-- queryResult 获取主观题学生作答记录
+
+-- 更改表结构：
+	ALTER TABLE objective_question ADD COLUMN enabled int(1) DEFAULT 0 COMMENT '是否在报告中启用。1 启用；0 停用';
+	ALTER TABLE exconclusion ADD COLUMN enabled int(1) DEFAULT 0 COMMENT '是否在报告中启用。1 启用；0 停用';
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2021-05-30
+-- 【1】增加学期、班级与实验的关联关系，使实验成绩管理中“选择学期”-“选择班级”后，“选择实验”列表中只显示该学期该班级的实验
+-- 【2】增加客观题手动批改的功能
+-- 更改文件记录：
+	course-admin\src\views\nav3\Page6.vue 学期设置管理界面
+	course-admin\src\views\nav1\Form.vue 实验成绩管理界面
+	course-admin\src\api\api.js
+		-- saveTermClassExperiments 保存某学期下的某班级的实验
+		-- queryAllExperiments 查询所有实验信息
+		-- updateObjectiveQuestionResultScore 更新客观题分数
+	exserver\application\controllers\Terminfo.php
+		-- getSearchTermClass 查询学期课程信息
+		-- saveClassExperiments 保存学期课程实验信息
+	exserver\application\controllers\ExpSelect.php
+		-- queryAllExperiments 查询所有实验信息
+		-- index 查询学期课程下的实验
+	exserver\application\controllers\ExObjectiveQuestion.php
+		-- updateResultScore 更新客观题分数
+
+-- 更改表结构：
+	ALTER TABLE `termclassinfo` ADD COLUMN `experimentids` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci COMMENT '选择的实验列表';
+
+-- 笔记：
+	SELECT * FROM `objective_question_result` WHERE stuid = 245 -- 2019-2020-1 计算机（中美交流）1801 实验一 庄宝星 3180612012
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2021-05-09
+-- 修改填空题支持多个答案的匹配，并支持部分得分方式
+-- 更改文件记录：
+	course-admin\src\views\nav1\Form.vue
+	course-manage\src\components\detial-content\excontent.vue
+	course-manage\src\components\detial-content\exdetial.vue
+	exserver\application\controllers\ExObjectiveQuestion.php
+-- 更改表注释：
+	ALTER TABLE `objective_question_result` MODIFY COLUMN `is_right` int(11) COMMENT '答案是否正确：0-不正确 1-正确 2-部分正确';
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2021-05-05
+-- 【1】教师端修改
+-- a) 修改教师端“实验项目管理”中的Tab页名称
+	1）改“内容编辑” -> “实验指导”
+	2）改“实验操作与总结” -> “实验报告模板”
+	3）改“新增测试题目” -> “新增预习测试题”
+	4）改“管理测试题目” -> “管理预习测试题”
+   b) 修改“实验操作与总结”Tab页中树形目录结构节点名称
+    1）改“实验结果与总结” -> “实验报告模板”
+	2）增加“报告客观题新增”和“报告客观题管理”节点
+	3）改“操作测试” -> “报告主观题新增”
+	3）改“测试题管理” -> “报告主观题管理”
+   c) 增加客观题新增/管理功能
+   d) 增加客观题/主观题图片上传的功能
+-- 更改文件记录：
+	course-admin\src\views\course\exprement.vue -- 修改  实验项目管理界面 - 客观题管理部分
+	course-admin\src\views\nav1\Form.vue -- 实验成绩管理界面 - 计算实验总分 = 预习测试题总分 * 30% + 操作得分 * 40% + 实验报告得分 * 30%
+	course-admin\src\components\uploader\imageUploader.vue -- 新增文件：图片上传组件
+	course-admin\src\api\api.js
+		-- addObjectiveQuestion 新增实验报告中的客观题
+		-- queryObjectiveQuestion 查询实验报告中的客观题
+		-- deleteObjectiveQuestion 删除实验报告中的客观题
+		-- updateObjectiveQuestion 更新实验报告中的客观题
+		-- queryObjectiveQuestionResult 查询实验报告客观题学生作答结果
+		-- queryObjectiveQuestionTopicImages 查询客观题题干图片
+		-- saveObjectiveQuestionTopicImages 保存客观题题干图片
+		-- querySubjectiveQuestionImages 查询主观题图片
+		-- saveSubjectiveQuestionImages 保存主观题图片
+	exserver\application\controllers\ExObjectiveQuestion.php -- 新增文件：客观题管理
+	exserver\application\controllers\Allinfo.php - 修改 index 中 计算实验总分的逻辑，增加客观题的分值
+	exserver\application\controllers\Exconclusion.php -- 修改文件：主观题管理，增加图片管理功能
+
+-- 【2】学生端修改
+-- 增加功能：
+-- 更改文件记录：
+	course-manage\src\components\detial-content\excontent.vue -- 客观题学生作答部分
+	course-manage\src\components\detial-content\exdetial.vue -- 客观题学生查看部分 - 计算实验总分 = 预习测试题总分 * 30% + 操作得分 * 40% + 实验报告得分 * 30%
+	course-manage\src\api\api.js
+		-- queryObjectiveQuestionResult 查询实验报告客观题学生作答结果
+		-- saveObjectiveQuestionResult 保存实验报告客观题学生作答结果
+	exserver\application\controllers\StuExp.php - 修改 index 中 计算实验总分的逻辑，增加客观题的分值
+	exserver\application\controllers\Expinfo.php - 修改文件，增加主观题图片查询功能
+
+
+	笔记：
+	报告主观题新增 AddExperimentConclusion - /Exconclusion/index - 表 exconclusion
+	增加实验报告内容（富文本框） AddExperimentContent - /Addexreport/update	- 表 exreportinfo
+	新增预习测试题（单选/多选） AddExamSelect - /TestSelect/index - 表 exam 和 表 examanswer
+
+	------------------------------------------------------------------------
+    ------------------------------------------------------------------------
+    ------------------------------------------------------------------------
+    --【相关查询sql】
+    -- 切换数据库 exsql
+    use exsql;
+    --
+    -- 表的结构 `objective_question`
+    --
+    DROP TABLE IF EXISTS `objective_question`;
+    CREATE TABLE IF NOT EXISTS `objective_question` (
+      `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+      `exid` int(11) NOT NULL COMMENT '实验编号',
+	  `type` int(11) NOT NULL COMMENT '客观题类型：1-单选 2-多选 3-填空',
+      `topic` varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT '题目描述',
+	  `correct_answer_value` varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT '正确答案',
+	  `analysis` varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT '题目分析',
+	  `score` int(11) NOT NULL COMMENT '客观题分数',
+	  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='实验报告客观题表';
+	ALTER TABLE `objective_question` ADD INDEX `objective_question_exid` (`exid`);
+	--
+    -- 表的结构 `objective_question_option`
+    --
+	DROP TABLE IF EXISTS `objective_question_option`;
+    CREATE TABLE IF NOT EXISTS `objective_question_option` (
+      `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+      `objective_question_id` int(11) NOT NULL COMMENT '实验报告客观题表ID',
+      `option_name` varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT '选项名称',
+	  `option_value` int(11) NOT NULL COMMENT '客观题选择题选项值：0-A 1-B 2-C ...',
+	  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='实验报告客观题选项表';
+	ALTER TABLE `objective_question_option` ADD INDEX `objective_question_option_questionid` (`objective_question_id`);
+	--
+    -- 表的结构 `objective_question_result`
+    --
+	DROP TABLE IF EXISTS `objective_question_result`;
+    CREATE TABLE IF NOT EXISTS `objective_question_result` (
+      `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+	  `stuid` int(11) NOT NULL COMMENT '学生ID',
+      `objective_question_id` int(11) NOT NULL COMMENT '实验报告客观题表ID',
+      `answer_value` varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT '作题答案',
+	  `is_hand_in` int(11) NOT NULL COMMENT '是否交卷：0-未交卷 1-已交卷',
+	  `is_right` int(11) COMMENT '答案是否正确：0-不正确 1-正确 2-部分正确',
+	  `score` int(11) COMMENT '客观题得分',
+	  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='实验报告客观题学生作答结果表';
+	ALTER TABLE `objective_question_result` ADD INDEX `objective_question_result_stuid_questionid` (`stuid`,`objective_question_id`);
+	--
+    -- 表的结构 `objective_question_topic_image`
+    --
+	DROP TABLE IF EXISTS `objective_question_topic_image`;
+    CREATE TABLE IF NOT EXISTS `objective_question_topic_image` (
+      `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+      `objective_question_id` int(11) NOT NULL COMMENT '实验报告客观题表ID',
+	  `name` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT '图片名',
+	  `size` int(11) COMMENT '图片大小',
+      `image_base64_content` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT '客观题题干图片',
+	  `flag` int(11) COMMENT '标志位：时间戳',
+	  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='实验报告客观题题干图片表';
+	ALTER TABLE `objective_question_topic_image` ADD INDEX `objective_question_topic_image_questionid` (`objective_question_id`);
+	ALTER TABLE `objective_question_topic_image` ADD INDEX `objective_question_topic_image_flag` (`flag`);
+	--
+    -- 表的结构 `subjective_question_image`
+    --
+	DROP TABLE IF EXISTS `subjective_question_image`;
+    CREATE TABLE IF NOT EXISTS `subjective_question_image` (
+      `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+      `subjective_question_id` int(11) NOT NULL COMMENT '实验报告主观题表(exconclusion)ID',
+	  `type` int(11) COMMENT '图片所属类型：1-题干；2-答案',
+	  `name` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT '图片名',
+	  `size` int(11) COMMENT '图片大小',
+      `image_base64_content` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT '客观题题干图片',
+	  `flag` int(11) COMMENT '标志位：时间戳',
+	  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='实验报告主观题图片表';
+	ALTER TABLE `subjective_question_image` ADD INDEX `subjective_question_image_questionid` (`subjective_question_id`);
+	ALTER TABLE `subjective_question_image` ADD INDEX `subjective_question_image_flag` (`flag`);
+
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2021-01-16
+-- 【1】
+-- 增加功能：实验报告内容支持自定义选择，并在报告中只显示选择打印的内容
+-- 更改文件记录：
+	course-admin\src\views\course\exprement.vue -- 修改
+	course-admin\src\api\api.js -- 增加 updateExreportPrintable()
+	exserver\application\controllers\Addexreport.php -- 增加 updatePrintable()
+	exserver\application\controllers\Expinfo.php -- 修改 index()
+
+-- 数据库修改记录：
+	ALTER TABLE exreportinfo ADD COLUMN printable int(1) DEFAULT 1 COMMENT '是否在报告中打印该内容。1 打印；0 不打印';
+
+-- 【2】
+-- 优化功能：修改查看实验报告的得分为实验报告得分，而非总分
+-- 更改文件记录：
+	course-manage\src\components\detial-content\exdetial.vue
+	course-admin\src\views\nav1\course.vue
+
+-- 【3】
+-- 优化功能：增加 “实验成绩管理” 和 “课程成绩管理” 中的查询排序功能（按学生学号升序排序）
+-- 更改文件记录：
+	exserver\application\controllers\Allinfo.php -- index -- 修改实验成绩管理中的学生排序
+											     -- projectIndex -- 修改课程成绩管理中的学生排序
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2020-12-05
+-- 增加功能：常见问题
+-- 更改文件记录：
+	course-manage\src\components\detial-content\excontent.vue
+	course-manage\src\components\detial-content\commonProblems.vue -- 常见问题页面
+	course-manage\src\assets\help -- 常见问题中的图片视频文件
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2020-11-17
+-- 逻辑优化：
+	1. 增加“系统提示”页签
+	2. 预习测试页面增加“开始测试”按钮，避免一进入页面就自动倒计时
+	3. 预习测试的自动倒计时从服务器取已用时间，浏览器基于已用时间做倒计时（避免客户端和服务器时间不一致）
+-- 更改文件记录：
+	course-manage\src\components\detial-content\excontent.vue
+		- 增加“系统提示”页签
+		- 预习测试中增加“开始测试”按钮，并自动计时，取消前端对预习测试记录中开始结束时间的使用，只提供记录中的已用时间做倒计时用
+
+	exserver\application\controllers\StuQues.php
+		- index() 优化学生预习测试测试题查询
+		- calcUseTime() 增加计算测试已用时间逻辑
+
+	alter table stuques modify column stime bigint(20) NULL DEFAULT NULL COMMENT '预习测试开始时间(时间戳秒)';
+	alter table stuques modify column etime bigint(20) NULL DEFAULT NULL COMMENT '预习测试结束时间(时间戳秒)';
+	alter table stuques modify column usetime bigint(11) NULL DEFAULT NULL COMMENT '预习测试使用时长(秒)';
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2020-10-30 (2020-11-15完成优化)
+-- 逻辑优化
+-- 问题描述：教师端登录 “成绩管理 -> 实验成绩管理 -> 重置考试(按钮)” 执行后，实验预习直接0分，预习测试不能重做
+-- 原因分析：预习测试计时开始时间 与 实验签到开始时间 用的是同一个，应分开单独进行超时计时
+-- 更改文件记录：
+	exserver\application\controllers\StuQues.php
+		- index() 中 stuques 首次插入时增加 stime 字段的初始化
+		- submit() 中 stuques 更新时增加 etime, usetime 字段的保存
+
+	course-manage\src\components\detial-content\excontent.vue
+		- 添加部分代码的逻辑步骤注释
+		- 将 预习测试 模块前移，实验签到 模块 后移
+		- updateTime() 优化，对 实验预习测试 和 实验签到 分别计时
+		- complete() 中 增加预测题提交时的 etime, usetime 保存
+		- getTestQuesetion() 中 增加 预习测试已用时长计算 qstuUseTime
+
+	course-manage\src\components\header\header.vue
+		更改 head_title 由 教学实验过程管理系统 为 实验教学过程管理平台
+
+	exserver\application\controllers\Allinfo.php
+		- index() 中增加超时校验自动签退功能，即：每次教师端查询时会校验(避免了定时器的使用)
+		- 增加 checkExperimentTime() 函数 实现实验超时自动签退
+
+-- 数据库更改表字段记录：
+	给 stuques 学生-实验预习测试关联记录表 增加三个字段：开始时间、结束时间、测试时长，用于超时监测
+		ALTER TABLE stuques 
+		ADD COLUMN stime bigint(20) NULL DEFAULT NULL COMMENT '预习测试开始时间(时间戳秒)',
+		ADD COLUMN etime bigint(20) NULL DEFAULT NULL COMMENT '预习测试结束时间(时间戳秒)',
+		ADD COLUMN usetime bigint(11) NULL DEFAULT NULL COMMENT '预习测试使用时长(秒)';
+
+-- 教师测试账号：1000001165 密码：1966424
+-- 学生测试账号：3160610005 密码：3160610005  表：studentinfo - id:330
+
+-- SQL查询学生预习测试记录(删除该记录，则预习测试题重做，并重新计时)
+	SELECT
+		*
+	FROM
+		stuques
+	WHERE
+		stuid = 330
+		AND exid = 25
+
+-- SQL查询学生实验签到记录(删除该记录，则实验签到记录作废，并重新签到计时)
+	SELECT
+		*
+	FROM
+		record
+	WHERE
+		stuid = 330
+		AND exid = 25
+
+
+代码逻辑梳理结果总结：
+	整个实验流程如下：
+	1. 学生进行预习测试，预习时长如20分钟，超时自动提交预习题试卷(超时监测不因浏览器刷新或者关闭而重新计时)
+	2. 预习完成后，进入实验环节(属于线下实验线上计时的策略)，实验时长如100分钟
+		点签到，开始计时，实验结束，点签退，超时自动签退(超时监测不因浏览器刷新或者关闭而重新计时)
+	3. 实验报告填写，每个题目可单独提交保存，并在实验报告提交规定时长内提交完成即可，如100天
+		报告提交无超时自动监测，只有超时后提交失败的处理
+
+现在的问题是：
+	目前定时器一开始就同时自动监测了 预习测试 和 做实验签到签退 两个部分的时间，并以同一时间为开始时间
+	并且学生端一开始进入就是 实验签到 页面，导致学生先签到，后做预习题
+	结果就是，学生通过100分钟完成了实验，发现后面的预习测试已经超时(20分钟)自动提交无法做的问题
+
+解决方法：
+	1. 将 预习测试 模块放在前面，单独自动计时，超时判断
+	2. 将 实验签到签退 模块放在第二，等学生完成预习测试后，再进入
+
+代码逻辑梳理：
+	【教师端】：
+	点击实验重置按钮：
+		- php - /StuQues/delete
+			  - 如果 stuques 记录存在，则删除
+
+	【学生端】：
+	excontent.vue
+		mounted:
+			/* 1. 预习测试 和 实验签到 的定时超时监测 部分 */
+			updateTime()
+			/* 2. 预习测试 部分 */
+			getTestQuesetion()
+				- api.js - getStuQuestion 获取测试题 
+				- php - /StuQues/index
+					- stuques 学生实验课程关联表(表示学生是否分配到实验题目，学生编号、实验编号、题目编号列表、回答答案列表、是否正确列表、是否交卷)
+					- experimentinfo 查询该实验课程信息(所属课程、实验名称、实验时长(分)、预习测试时长(分)、报告提交时长(天)、是否开课)
+					- exam 实验题目表(所属实验、题目、正确答案的选项标记)
+					- examanswer 实验题目选项表(所属题目、选项、选项标记)
+				**  - 如果 stuques 不存在，则插入(学生编号、实验编号、题目编号列表、开始时间 字段值)
+			/* 3. 目的及原理 部分 */
+			getExperimentS()
+				- api.js - getExperimentContent 获取实验中的内容(实验目的及原理)
+				- php - /Addexreport/search
+					- exreportinfo 实验报告标题及内容基本信息表(实验目的及原理)
+			/* 4. 填写实验报告 部分 */
+			getExperimentsConclusion()
+				- api.js - getExperimentConclusion 获取实验与总结中的主观题
+				- php - /Exconclusion/search
+					- exconclusion 实验主观题信息表
+			/* 查询签到信息 */
+			SearchSign()
+				- api.js - Signin 签到
+				- php - /kaoqin/index
+					- record 学生实验签到表(即学生-实验关联信息，开始时间、结束时间、时长(秒)、操作得分)
+						- 如果没有签到记录，则新增一条签到记录，无开始结束时长
+						- 否则，取出该学生当前实验的签到记录，含开始结束时间
+					- 注：该逻辑并未维护并更新开始、结束、时长三个字段
+			**	- 如果开始结束时间都已经存在了，则停止计时器(stopflag=true)
+
+		/* 预习测试题交卷 */
+		this.complete()
+			- 计算得分及相关待保存信息
+			- api.js - submitFinish 交卷
+			- php - /StuQues/submit
+				- stuques 学生实验课程关联表
+				- 更新 stuques 记录(保存学生的预习测试答案)，插入(回答答案列表、是否正确列表、是否交卷等字段、结束时间、测试用时(分钟))
+
+		/* 主观题保存(交卷) */
+		this.saveSubjective()
+			- api.js - submitExreport 提交实验报告
+			- php - /Exreport/index
+				- stureport 学生实验题目作答记录表(学生、实验、题目、学生作答内容(文字或图片)、得分)
+				- 如果第一次保存则插入，否则更新作答内容
+
+		/* 主观题交卷 */
+		this.submitSubjective()
+			- 其中并未执行任何交卷逻辑，只是提示一下而已
+			- 正真的交卷操作都是在“保存”按钮中触发 this.saveSubjective()
+
+		/* 签到 */
+		this.start() 仅仅是将当前时间更新到 record 签到信息表 中的开始时间字段中
+		/* 签退 */
+		this.stop() 仅仅是将当前时间更新到 record 签到信息表 中的结束时间字段中，同时停止定时器
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2020-06-09
+-- 逻辑优化
+-- 问题描述：“成绩管理 -> 课程成绩管理” 导航栏页面中的模糊查询（未选班级的情况下），点击“查看实验”后导出的Excel无内容
+-- 原因分析：未选择班级的情况下，前端没能传“班级”参数到后端，以至于查询无结果
+-- 解决方法：增加后端“班级”参数判空判断，并根据学生号查询其所属班级
+-- 更改文件：
+    exserver/application/controllers/Allinfo.php
+        --修改 allExpermentIndex 方法，增加班级查询的方法
+    course-admin/src/views/nav1/course.vue
+        --修改 handleExprement 方法，解决导出的 Excel 名称中的班级为空的问题
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2020-06-06
+-- 逻辑优化
+-- 问题描述：“成绩管理 -> 课程成绩管理” 导航栏页面中的模糊查询（未选班级的情况下），出现“该课程实验暂未对该班级开放”的提示
+             如果选择了班级，可以查询出
+-- 几个概念：
+--      1） 实验课程管理是针对课程的每一个实验的
+--      2） 课程成绩管理是针对整个课程的所有实验的，单选每个班级是可以的
+-- 更改文件：
+    exserver/application/controllers/Allinfo.php
+    修改 projectIndex 方法，存在逻辑漏洞：只要一个学生所在班级未选某个实验，直接返回该提示
+    修改方式：将该类学生提出返回结果中，而不是直接返回提示
+
+-- 注：
+--   1） 未设置该实验课程为“开课”，需要在 “实验课程 -> 实验项目管理” 中点击“开课”，分别设置该门课程下的每个实验面向的开课班级
+--   2） 目前仅支持按实验级别开课，不支持按课程级别开课。
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2020-05-27
+-- 修复 bug
+-- bug 现象描述：前端点击签到按钮后直接显示签退时间的现象
+-- 更改文件：
+    course-manage/src/components/detial-content/excontent.vue
+    -- 定位问题：updateTime() 由定时器执行，其中数据是由 mounted() { this.getTestQuesetion(); } 取得
+                这中间就存在定时器执行函数中所需数据并没有及时从后端请求得到的问题，
+                导致参数 this.experimentTime 为默认值 0，直接执行 this.stop() 签退函数
+
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2020-05-22
+-- 修改“成绩管理 -> 实验成绩管理” 界面中，选择“班级”后，选择“实验”栏中只显示当前班级的开设实验
+-- 更改文件：
+    course-admin/src/views/nav1/Form.vue
+    exserver/application/controllers/ExpSelect.php
+        -- 注：相应查询的表 experimentinfo ，每条实验都保存了所有开课班级的名称，并没有用关联表拆分，查询不方便写
+
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2020-04-01
+-- 1)修改导航栏目录结构；
+-- 2)增加“成绩管理 -> 课程成绩管理” 导航栏页面中，按学期、课程（班级可不选）的模糊查询功能
+-- 更改文件：
+    D:\myPrograms\phpstudy_pro\WWW\experiment\course-admin\src\routes.js
+		优化目录结构，由原来的：
+			--学生信息
+			----学生信息管理
+			----实验成绩管理
+			----课程成绩管理
+		改为：
+			--学生信息
+			----学生信息管理
+			--成绩管理
+			----实验成绩管理
+			----课程成绩管理
+
+	D:\myPrograms\phpstudy_pro\WWW\experiment\course-admin\src\views\nav1\course.vue
+		增加选择学期选项
+
+	D:\myPrograms\phpstudy_pro\WWW\experiment\exserver\application\controllers\Allinfo.php
+		增加按学期、课程（班级可不选）的模糊查询功能
+		修改 projectIndex 方法
+
+
+------------------------------------------------------------------------------------------------------------------------------
+-- 2020-02-12 （2020-01-12 后，第一次更改）
+--【开发文件更改记录】
+
+	D:\myPrograms\phpstudy_pro\WWW\experiment\course-admin\config\index.js
+		"target": 'http://127.0.0.1/1experiment/exserver/index.php?'
+		更改为==>
+		"target": 'http://localhost/experiment/exserver/index.php?'
+
+	D:\myPrograms\phpstudy_pro\WWW\experiment\course-admin\static\js\baseConfig.js
+		baseUrl:'/api',
+		baseImge:'http://127.0.0.1/1experiment/exserver'
+		更改为==>
+		baseUrl:'/api',
+		baseImge:'http://localhost/experiment/exserver/'
+
+	D:\myPrograms\phpstudy_pro\WWW\experiment\course-admin\build\webpack.base.conf.js
+		引入在线批改相关 js 库
+		参考上边给出的【Vue中引入jQuery/html2canvas/bluebird方法】
+
+	D:\myPrograms\phpstudy_pro\WWW\experiment\course-admin\src\components\
+		‘components/’ 文件夹下增加 在线批改相关文件 ‘onlineCorrect 文件夹’
+
+	D:\myPrograms\phpstudy_pro\WWW\experiment\course-admin\src\views\nav1\Form.vue
+		引入 ‘在线批改模块代码’
+
+		<div class="draw_frame"><!-- 画图主框架区域 -->
+			<!-- canvas 画图绘制区域 【图层：最上层】【动态生成】 -->
+			<div class="draw_html_origin"><!-- 原始文本区域 【图层：最底层】【截图来源】-->
+				<div v-html="item.content" style="padding-left: 10px;"></div>
+			</div><!-- 原始文本区域 end -->
+			<div class="draw_html_edited"><!-- 数据库编辑快照 【图层：中间层】【仅显示】-->
+				<img v-if="item.mark" :src="item.mark" @load="draw_html_edited_load($event);"/><!-- 宽高 适应原始文本区域宽高 -->
+			</div><!-- 数据库编辑快照 end -->
+			<div class="draw_control"><!-- 画图控制区域 -->
+				<div class="draw_operate"><!-- 画图操作区域 -->
+					<button id="draw_correct_btn" class="draw_color_btn" @click="draw_correct_btn_click($event, index, item.id);">批改</button>
+					<button id="draw_save_btn" class="draw_color_btn" @click="draw_save_btn_click($event, index, item.id);">保存</button>
+					<button id="draw_export_btn" class="draw_color_btn">导出</button>
+				<button id="draw_back_btn" class="draw_color_btn">后退</button>
+					<button id="draw_forward_btn" class="draw_color_btn">前进</button>
+					<button id="draw_restore_btn" class="draw_color_btn">恢复</button>
+				</div><!-- 画图操作区域 end -->
+			</div><!-- 画图控制区域 end -->
+		</div><!-- 画图主框架区域 end -->
+
+		// 引入在线批改(onlineCorrection)样式文件及相关js库
+		import '../../components/onlineCorrect/css/onlineCorrection.css'; // 自定义 css
+		import { myCanvasManagerInit, getCanvasDataUrl, setCanvasDataUrl, draw_correct_btn_click, draw_html_edited_load } from 'onlineCorrection'; // 自定义 js 函数库
+
+		1. 向原代码中增加的地方：
+			//显示分数编辑页面
+			handleExprement(index, row){
+				this.editExpreVisible = true;
+				this.editForm = Object.assign({}, row);
+				let param = {
+					exid : row.exid,
+					stuid : row.id
+				}
+				getStuExreportAll(param).then(res =>{
+					this.stuExpreport = Object.assign([],res.data.report);
+					//console.log(this.stuExpreport);
+
+					//console.log(res.data.report);
+					// 初始化 onlineCorrection js 中的 myCanvasManager
+					let uniqueId = param.exid + '_' + param.stuid;
+					let canvasNum = this.stuExpreport.length;
+					myCanvasManagerInit(canvasNum, uniqueId);		<== 增加在线批改模块初始化
+				})
+			},
+		2. 增加的代码：
+			/**
+			 * 编辑快照加载事件
+			 * @param event 事件对象（默认）
+			 */
+			draw_html_edited_load(event) {
+				let thisImg = event.target; // 获取图片对象
+				draw_html_edited_load($(thisImg));
+			},
+			/**
+			 * “批改”按钮点击事件
+			 * @param event 事件对象（默认）
+			 * @param index 遍历序号
+			 * @param stureportid 学生实验报告表(stureport)的id
+			 */
+			draw_correct_btn_click(event, index, stureportid) {
+				//console.log(index, stureportid);
+				let thisBtn = event.target; // 获取事件按钮
+				let param = {
+					stureportid : stureportid
+				}
+				// 请求数据库 stureportid 对应的 mark 批改痕迹图片
+				queryCorrectMark(param).then(res =>{
+					//console.log(res.data.data);
+					var imgDataUrl = '';
+					if (res.data.data) {
+						imgDataUrl = res.data.data.mark;
+					}
+					// 获取 el-dialog 标签 body 对象（滚动条控制）
+					var $el_dialog_body = $($('.el-dialog__wrapper').get(1));
+					// 调用 onlineCorrection js 函数库 初始化 myCanvas
+					draw_correct_btn_click(thisBtn, index, imgDataUrl, $el_dialog_body);
+					this.$message({
+						message: '批改模块加载完成',
+						type: 'success'
+					});
+				});
+			},
+			/**
+			 * 批改“保存”按钮点击事件
+			 * @param event 事件对象（默认）
+			 * @param index 遍历序号
+			 * @param stureportid 学生实验报告表(stureport)的id
+			 */
+			draw_save_btn_click(event, index, stureportid) {
+				// 调用 onlineCorrection js 函数库 获取 canvas 显示图片 data url
+				var canvasDataUrl = getCanvasDataUrl(index);
+				this.saveCorrectMark(-1, stureportid, canvasDataUrl); // 本地不保存 correctmark.id，以 -1 表示没有
+			},
+			/**
+			 * 保存批改痕迹
+			 *     stureportid 与 mark 一一对应
+			 * @param correctmarkid 批改痕迹表(correctmark)的id
+			 * @param stureportid 学生实验报告表(stureport)的id
+			 * @param mark 批改痕迹内容（图片base64格式）
+			 */
+			saveCorrectMark(correctmarkid, stureportid, mark) {
+				if (!correctmarkid || !stureportid || !mark) {
+					return;
+				}
+				let param = {
+					id : correctmarkid,
+					stureportid : stureportid,
+					mark : mark
+				}
+				saveCorrectMark(param).then(res =>{
+					//console.log(res.data.data);
+					this.$message(res.data.msg);
+				});
+			}
+
+	D:\myPrograms\phpstudy_pro\WWW\experiment\course-admin\src\api\api.js
+		增加两个方法：
+		// 获取批改痕迹
+		export const queryCorrectMark = params => {
+			return axios.post(
+				`${base}/Expinfo/queryCorrectMark`,
+				Qs.stringify(params),
+				{
+					headers: {
+					  'Content-Type': 'application/x-www-form-urlencoded'
+					}
+				}
+			);
+		};
+		// 保存批改痕迹
+		export const saveCorrectMark = params => {
+			return axios.post(
+				`${base}/Expinfo/saveCorrectMark`,
+				Qs.stringify(params),
+				{
+					headers: {
+					  'Content-Type': 'application/x-www-form-urlencoded'
+					}
+				}
+			);
+		};
+
+	D:\myPrograms\phpstudy_pro\WWW\experiment\exserver\application\controllers\Expinfo.php
+		1. 修改源代码的地方：
+			public function index(){
+				$stuid = $_POST['stuid'];
+				$exid = $_POST['exid'];
+				$suffix ='order by titleid asc';
+				$res = DB::select('exreportinfo',['*'],['exid' => $exid]);
+
+				$res1 = DB::select('stureport',['*'],['exid' => $exid,'stuid' => $stuid],'and',$suffix);
+				foreach ($res1 as $key => $value) {
+					$res2 = DB::row('exconclusion',['topic','score'],['id' => $value->titleid]);
+					$res1[$key]->topic = $res2->topic;
+					$res1[$key]->Allscore = $res2->score;
+					$res1[$key]->keyvalue = $value->id;
+	修改处==>		// 拼装 correctmark 批改痕迹表数据，一个 stureport.id 对应 一条批改痕迹 mark
+					$resMark = DB::select('correctmark',['id', 'stureportid', 'mark'],['stureportid' => $value->id]);
+					if ($resMark > 0) {
+						$res1[$key]->correctmarkid = $resMark[0]->id;
+						$res1[$key]->stureportid = $resMark[0]->stureportid;
+						$res1[$key]->mark = $resMark[0]->mark;
+					}
+				}
+
+				// array_push($res,$res1);
+
+				$this->json([
+						'code' => 200,
+						'msg' => '数据获取成功',
+						'data' => $res,
+						'report' => $res1
+				]);
+			}
+		2. 增加两个数据库操作：
+			// 查询批改痕迹
+			public function queryCorrectMark() {
+				$stureportid = $_POST["stureportid"];
+				$res = DB::select('correctmark',['id', 'stureportid', 'mark'],['stureportid' => $stureportid]);
+				$this->json([
+					'code' => 200,
+					'msg' => '数据获取成功',
+					'data' => $res[0]
+				]);
+			}
+			// 保存批改痕迹：一个 stureportid 对应一条 correctmark 记录
+			public function saveCorrectMark() {
+				$id = $_POST["id"];
+				$stureportid = $_POST["stureportid"];
+				$mark = $_POST["mark"];
+				$ok = -1; // 初始值
+				// 1. 确保 stureportid 的 correctmark 表记录真的不存在
+				if ($id <= 0) {
+					$res = DB::select('correctmark',['id'],['stureportid' => $stureportid]); // 返回数组
+					if ($res > 0) {
+						$id = $res[0]->id;
+					}
+				}
+				// 2. 如果存在，则更新；否则新增；
+				if ($id > 0) {
+					$ok = DB::update('correctmark',['mark' => $mark],['id' => $id]); // 返回更新成功条数
+					if ($ok > 0) {
+						$this->json([
+							'code' => 200,
+							'msg' => '保存成功',
+							'data' => [$id]
+						]);
+					}
+				} else {
+					$ok = DB::insert('correctmark',['stureportid' => $stureportid,'mark' => $mark]); // 返回插入成功条数
+					// 新增成功后需返回 id 给前端
+					if ($ok > 0) {
+						$res = DB::select('correctmark',['id'],['stureportid' => $stureportid]);
+						if($res > 0){
+							$this->json([
+								'code' => 200,
+								'msg' => '保存成功',
+								'data' => [$res[0]->id]	// return correctmark's id
+							]);
+						}
+					}
+				}
+				if ($ok <= 0) {
+					$this->json([
+						'code' => 201,
+						'msg' => '保存失败，或重复提交',
+						'data' => [$id]
+					]);
+				}
+			}
+
+    ------------------------------------------------------------------------
+    ------------------------------------------------------------------------
+    ------------------------------------------------------------------------
+    --【相关查询sql】
+    select * from exreportinfo where exid = 25; # exid 实验编号
+    select * from stureport where exid = 25 and stuid = 330; // 只需用这个表`stureport`的id 关联
+    select * from exconclusion where id in (
+        select titleid from stureport where exid = 25 and stuid = 330
+    );
+
+    --【相关建表sql】
+    -- 切换数据库 exsql
+    use exsql;
+    --
+    -- 表的结构 `correctmark`
+    --
+    DROP TABLE IF EXISTS `correctmark`;
+    CREATE TABLE IF NOT EXISTS `correctmark` (
+      `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '课程编号',
+      `stureportid` int(11) NOT NULL COMMENT '学生实验报告内容表ID',
+      `mark` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL COMMENT '痕迹图片',
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='实验报告批改痕迹表';
+
+
+------------------------------------------------------------------------------------------------------------------------------
