@@ -33,9 +33,9 @@ class Conf {
     private static $Mysql = [
         'host' => 'localhost',
         'port' => 3306,
-        'user' => 'root',
-        'db'   => 'cAuth',
-        'pass' => '',
+        'user' => 'guaqiu',
+        'db'   => 'exp',
+        'pass' => '888666',
         'char' => 'utf8mb4'
     ];
     

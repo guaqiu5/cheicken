@@ -23,9 +23,9 @@ $config = [
     'mysql' => [
         'host' => '127.0.0.1',
         'port' => 3306,
-        'user' => 'root',
-        'db'   => 'exsql',
-        'pass' => 'jsj201',
+        'user' => 'guaqiu',
+        'db'   => 'exp',
+        'pass' => '888666',
         'char' => 'utf8mb4'
     ],
 

@@ -16,7 +16,21 @@
 					<span style="color:red;font-weight:bold;">填写实验报告时应注意每道题必须点“保存”。</span>
 				</p>
 		  </el-tab-pane>
-		  <el-tab-pane name="first">
+      <el-tab-pane name="first">
+		  	<span slot="label"><i class="el-icon-tickets"></i>实验指导</span>
+		  	<div class="third_content" v-if="purpose.length > 0">
+		  		<div class="" v-for = "(item,index) in purpose">
+		  			<div class="list">{{capital[index]}}、{{item.retitle}}</div>
+		  			<div class="list_content" v-html="item.recont">
+		  				<!-- {{item.recont}} -->
+		  			</div>
+		  		</div>
+		  	</div>
+		  	<div style="height: 500px" v-else>
+		    	<p class="tagtitle">暂无实验指导的描述，请联系老师！</p>
+		    </div>
+		  </el-tab-pane>
+		  <el-tab-pane name="second">
 		    <span slot="label"><i class="el-icon-document"></i> 预习测试</span>
 			<div class="second_title" v-show="!isFinishtest && !isStartTest">
 				<el-button type="success" class="test-start" @click="startTestBtn">开始测试</el-button>
@@ -89,7 +103,7 @@
 		    	<p class="tagtitle">准备开始测试！</p>
 		    </div>
 		  </el-tab-pane>
-		  <el-tab-pane name="second" class="second_content">
+		  <el-tab-pane name="third" class="second_content" :disabled="!isFinishtest">
 		  	<span slot="label"><i class="el-icon-time"></i>实验签到</span>
 		  	<div class="sign">
 				<P class="date">当前日期:{{date}}</P> 
@@ -100,20 +114,6 @@
 				<el-button type="success" @click.stop.prevent="start">签到</el-button>	 
 				<el-button type="danger" @click.stop.prevent="stop">签退</el-button>		
 		  	</div>
-		  </el-tab-pane>
-		  <el-tab-pane name="third" :disabled="this.starttime == ''">
-		  	<span slot="label"><i class="el-icon-tickets"></i>目的及原理</span>
-		  	<div class="third_content" v-if="purpose.length > 0">
-		  		<div class="" v-for = "(item,index) in purpose">
-		  			<div class="list">{{capital[index]}}、{{item.retitle}}</div>
-		  			<div class="list_content" v-html="item.recont">
-		  				<!-- {{item.recont}} -->
-		  			</div>
-		  		</div>
-		  	</div>
-		  	<div style="height: 500px" v-else>
-		    	<p class="tagtitle">暂无目的及原理的描述，请联系老师！</p>
-		    </div>
 		  </el-tab-pane>
 		  <el-tab-pane name="fourth" :disabled="this.starttime == ''">
 		  	<span slot="label"><i class="el-icon-edit"></i>填写实验报告</span>
