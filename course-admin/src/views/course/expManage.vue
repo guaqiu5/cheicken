@@ -37,6 +37,22 @@
 				            circle
 				            @click="() => remove(node, data)">
 				          </el-button>
+						  <el-button
+				            v-if="node.level==2 && node.id !== node.parent.childNodes[0].id "
+				            type="primary"
+				            size="mini"
+				            icon="el-icon-arrow-up" 
+				            circle
+				            @click="() => upNode(node, data)">
+				          </el-button>
+						  <el-button
+						  	v-if="node.level==2 && node.id !== node.parent.childNodes[node.parent.childNodes.length-1].id"
+				            type="primary"
+				            size="mini"
+				            icon="el-icon-arrow-down" 
+				            circle
+				            @click="() => downNode(node, data)">
+				          </el-button>
 				        </span>
 				    </span>
 				</el-tree>
@@ -165,7 +181,7 @@
 	</div>
 </template>
 <script>
-	import {getProject,imgUpload,imgUploadUrl,baseImge,removeCourse,updateCourse,Addcourse,removeChapter,updateChapter,Addexperiment,UpdateExperiment,removeExperiment} from '../../api/api';
+	import {getProject,imgUpload,imgUploadUrl,baseImge,removeCourse,updateCourse,Addcourse,removeChapter,updateChapter,Addexperiment,UpdateExperiment,removeExperiment,swapExperiment} from '../../api/api';
 	export default{
 		name : "courseMange",
 		data(){
@@ -175,7 +191,7 @@
           			label: 'name'
 		        },
 		        actionimgUploadUrl:imgUploadUrl,
-		        data:[],//树形数据
+		        data:[],//树形数据,
 		        getCourseNameLoading:false,//加载动画
 		        filterText:'',//过滤器
 		        project:{
@@ -369,6 +385,82 @@
 			        });
 		    	}
 		    },
+			// 上移
+			upNode(node,data) {
+				console.log(node,data)
+				this.$confirm('此操作将上移该结点,是否继续?', '提示', {
+				        confirmButtonText: '确定',
+				       	cancelButtonText: '取消',
+				        type: 'warning'
+			        }).then(() => {
+						let nodeIndex
+						console.log(data.id)
+						node.parent.childNodes.forEach((item,index) => {
+							console.log(item.id)
+							if(item.data.id == data.id) {
+								nodeIndex = index
+							}
+						})
+						console.log(nodeIndex,'index')
+			        		let param = {
+								id1: node.parent.childNodes[nodeIndex-1].data.id,
+			        			id2 : data.id,
+			        		}
+							console.log(param,'param')
+			        		swapExperiment(param).then(res =>{
+			        			if(res.data.code === 200){
+			        				this.$message({
+							            type: 'success',
+							            message: res.data.msg
+							        });
+			        				this.getprojcet();
+			        				this.experimentVisable = false;
+
+			        			}else{
+			        				this.$message.error(res.data.msg);
+			        			}
+			        		});
+			        	
+			        })
+			},
+			// 下移
+			downNode(node,data){
+				console.log(node,data)
+				this.$confirm('此操作将下移该结点,是否继续?', '提示', {
+				        confirmButtonText: '确定',
+				       	cancelButtonText: '取消',
+				        type: 'warning'
+			        }).then(() => {
+						let nodeIndex
+						console.log(data.id)
+						node.parent.childNodes.forEach((item,index) => {
+							console.log(item.id)
+							if(item.data.id == data.id) {
+								nodeIndex = index
+							}
+						})
+						console.log(nodeIndex,'index')
+			        		let param = {
+								id1 : data.id,
+								id2: node.parent.childNodes[nodeIndex+1].data.id,
+			        		}
+							console.log(param,'param')
+			        		swapExperiment(param).then(res =>{
+			        			if(res.data.code === 200){
+			        				this.$message({
+							            type: 'success',
+							            message: res.data.msg
+							        });
+			        				this.getprojcet();
+			        				this.experimentVisable = false;
+
+			        			}else{
+			        				this.$message.error(res.data.msg);
+			        			}
+			        		});
+			        	
+			        })
+			},
 		    handleRemove(file, fileList) {
 		        console.log(file, fileList);
 		    },

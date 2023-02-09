@@ -125,6 +125,19 @@ export const removeExperiment = params => {
       	}
     ); 
 };
+//交换实验
+export const swapExperiment = params => { 
+	return axios.post(
+		`${base}/Addexperiment/swap`,
+		Qs.stringify(params),
+		{
+	        headers: {
+	          'Content-Type': 'application/x-www-form-urlencoded'
+	        }
+      	}
+    ); 
+};
+
 
 //获取实验内容
 export const getExperiment = params => { 
@@ -568,6 +581,19 @@ export const getStudentAllExperment = params => {
 export const reStuQuestion = params => { 
     return axios.post(
         `${base}/StuQues/delete`,
+        Qs.stringify(params),
+        {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }
+    ); 
+};
+
+//重置学生报告
+export const reStuReport = params => { 
+    return axios.post(
+        `${base}/StuQues/deleteReport`,
         Qs.stringify(params),
         {
             headers: {

@@ -81,6 +81,27 @@ class Addexperiment extends CI_Controller{
 			]);
 		}
 	}
+	public function swap(){
+		$id1=$_POST['id1'];
+		$id2=$_POST['id2'];
+		$temp=DB::select('experimentinfo', ['*'],['id' => $id1]);
+		$temp2=DB::select('experimentinfo', ['*'],['id' => $id2]);
+		$ok1 = DB::update('experimentinfo',['id' => $id2,'ename'=>$temp2[0]->ename,'einfo'=>$temp2[0]->einfo,'etime'=>$temp2[0]->etime,'extime'=>$temp2[0]->extime,'eclutime'=>$temp2[0]->eclutime],['id'=>$id1]);
+		$ok2=DB::update('experimentinfo',['id' => $id1,'ename'=>$temp[0]->ename,'einfo'=>$temp[0]->einfo,'etime'=>$temp[0]->etime,'extime'=>$temp[0]->extime,'eclutime'=>$temp[0]->eclutime],['id'=>$id2]);
+		if($ok1>0 && $ok2>0){
+			$this->json([
+				'code'=>200,
+				'msg'=>'成功',
+				'data'=>''				
+			]);
+		}else{
+			$this->json([
+				'code'=>201,
+				'msg'=>'失败',
+				'data'=>''				
+			]);
+		}
+	}
 
 	public function search()
 	{

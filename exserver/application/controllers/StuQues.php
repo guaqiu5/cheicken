@@ -247,5 +247,33 @@ class StuQues extends CI_Controller{
 			]);
 		}
 	}
+
+	public function deleteReport() {
+		$stuid = $_POST['stuid'];
+		$exid = $_POST['exid'];
+		$res = DB::select('stureport',['*'],['stuid' => $stuid,'exid' => $exid]);
+		if($res>0){
+			$res2 = DB::delete('stureport',['stuid' => $stuid,'exid' => $exid]);
+			if($res2>0){
+				$this->json([
+					'code' => 200,
+					'msg' => '打回成功',
+					'data' => ''
+				]);
+			}else{
+				$this->json([
+					'code' => 202,
+					'msg' => '打回失败',
+					'data' => ''
+				]);
+			}
+		}else{
+			$this->json([
+				'code' => 201,
+				'msg' => '打回失败',
+				'data' => ''
+			]);
+		}
+	}
 }
 ?>

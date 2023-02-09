@@ -45,7 +45,7 @@
 			</el-table-column>
 			<el-table-column prop="class" label="班级" width="120" show-overflow-tooltip align="center">
 			</el-table-column>
-			<el-table-column prop="stime" label="签到时间" width="180" show-overflow-tooltip align="center">
+			<el-table-column prop="stime" label="签到时间" width="180" sortable show-overflow-tooltip align="center">
 			</el-table-column>
 			<el-table-column prop="etime" label="签退时间"  width="180" show-overflow-tooltip align="center">
 			</el-table-column>
@@ -71,12 +71,15 @@
 					{{scope.row.rationscore.toFixed(2)}}
 				</template>
 			</el-table-column>
-			<el-table-column label="操作" width="400">
+			<el-table-column label="操作" width="500">
 				 <template slot-scope="scope">
-					<el-button size="small" @click="handleExprementObjecctive(scope.$index, scope.row)">客观题批改</el-button>
+          <div class="flex-center">
+          <el-button size="small" @click="handleExprementObjecctive(scope.$index, scope.row)">客观题批改</el-button>
           <el-button size="small" @click="handleExprement(scope.$index, scope.row)">主观题批改</el-button>
-					<el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">查看</el-button>
-					<el-button type="danger" size="small" @click="handleReExame(scope.$index, scope.row)">重置考试</el-button>
+          <el-button type="danger" size="small" @click="handleResetReport(scope.$index, scope.row)">报告打回</el-button>
+					<el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)">报告查看</el-button>
+					<el-button type="danger" size="small" @click="handleReExame(scope.$index, scope.row)">重置预习</el-button>
+          </div>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -180,7 +183,7 @@
 			</div>
 			<div slot="footer" class="dialog-footer">
 				<el-button @click.native="editFormVisible = false">取消</el-button>
-				<el-button type="primary" @click.native="uploadExprement()" :loading="editLoading">下载</el-button>
+				<el-button type="primary" @click.native="dowloadExperiment()" :loading="editLoading">下载</el-button>
 			</div>
 		</el-dialog>
 
@@ -361,6 +364,7 @@ import {
   htmltowordurl,
   updateopretion,
   reStuQuestion,
+  reStuReport,
   searchTerminfo,
   getSearchTermClass,
   queryCorrectMark,
@@ -378,7 +382,7 @@ import {
   draw_correct_btn_click,
   draw_html_edited_load,
 } from "onlineCorrection"; // 自定义 js 函数库
-
+import vdom2pdf from "../../utils/vdom2pdf";
 export default {
   data() {
     return {
@@ -543,7 +547,7 @@ export default {
         }
       });
     },
-    //重置考试
+    //重置预习
     handleReExame: function (index, row) {
       let param = {
         exid: row.exid,
@@ -569,6 +573,41 @@ export default {
             })
             .catch((ret) => {
               this.$message.error("重置成绩失败");
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消重置",
+          });
+        });
+    },
+     //重置报告
+     handleResetReport: function (index, row) {
+      let param = {
+        exid: row.exid,
+        stuid: row.id,
+      };
+      this.$confirm("此操作将重置学生报告, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          reStuReport(param)
+            .then((res) => {
+              if (res.data.code === 200) {
+                this.$message({
+                  message: res.data.msg,
+                  type: "success",
+                });
+                this.getUsers();
+              } else {
+                this.$message.error(res.data.msg);
+              }
+            })
+            .catch((ret) => {
+              this.$message.error("重置报告失败");
             });
         })
         .catch(() => {
@@ -615,6 +654,7 @@ export default {
         if (res.data.code === 200) {
           questionResult.isRight = res.data.data.isRight;
           questionResult.score = res.data.data.score;
+          this.getUsers();
           this.$message({
             message: res.data.msg,
             type: "success",
@@ -801,6 +841,11 @@ export default {
       a.download = this.htmlTitle || "file";
       a.click();
       window.URL.revokeObjectURL(url);
+    },
+    //下载pdf格式的实验报告
+    dowloadExperiment() {
+      const vdomRef = this.$refs.resume
+      vdom2pdf(this,vdomRef,this.htmlTitle || 'file')
     },
     //保存分数
     submitscore(index, Allscore) {
@@ -1039,5 +1084,10 @@ export default {
 .questionImageClass {
   margin-left: 3%;
   font-weight: bold;
+}
+.flex-center{
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

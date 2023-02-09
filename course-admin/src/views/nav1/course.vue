@@ -37,32 +37,35 @@
 
 		<!--列表-->
 		<el-table :data="users" highlight-current-row v-loading="listLoading" @selection-change="selsChange" style="width: 100%;"  height="500">
-			<el-table-column type="index" width="50">
-			</el-table-column>
+			<el-table-column type="index" width="50"></el-table-column>
 			<el-table-column prop="num" label="学号"  show-overflow-tooltip align="center">
 			</el-table-column>
 			<el-table-column prop="name" label="姓名" show-overflow-tooltip align="center">
 			</el-table-column>
-			<el-table-column prop="stuChoice" label="实验预习"  show-overflow-tooltip  align="center" sortable>
+			<div v-if="users[0]">
+				<el-table-column  v-for="(item,index) in users[0].stuDetail" :label="item.expName" key="item">
+					<el-table-column  label="实验预习"  show-overflow-tooltip  align="center" sortable>
 				<template slot-scope="scope">
-					{{scope.row.stuChoice.toFixed(2)}}
+					{{ scope.row.stuDetail[index].stuChoice}}
 				</template>
 			</el-table-column>
-			<el-table-column prop="operationscore" label="实验操作" show-overflow-tooltip  align="center" sortable>
+			<el-table-column  label="实验操作" show-overflow-tooltip  align="center" sortable>
 				<template slot-scope="scope">
-					{{scope.row.stuOperation.toFixed(2)}}
+					{{scope.row.stuDetail[index].stuOperation}}
 				</template>
 			</el-table-column>
-			<el-table-column prop="reportscore" label="实验报告"  show-overflow-tooltip  align="center" sortable>
+			<el-table-column  label="实验报告"  show-overflow-tooltip  align="center" sortable>
 				<template slot-scope="scope">
-					{{scope.row.stuReport.toFixed(2)}}
+					{{scope.row.stuDetail[index].stuReport}}
 				</template>
 			</el-table-column>
-			<el-table-column prop="rationscore" label="总分"  show-overflow-tooltip  align="center" sortable>
+			<el-table-column label="总分"  show-overflow-tooltip  align="center" sortable>
 				<template slot-scope="scope">
-					{{scope.row.stuAllScore.toFixed(2)}}
+					{{scope.row.stuDetail[index].stuAllScore}}
 				</template>
 			</el-table-column>
+				</el-table-column>
+			</div>
 			<el-table-column label="操作" width="200">
 				 <template slot-scope="scope">
 					<el-button size="small" @click="handleExprement(scope.$index, scope.row)">查看实验</el-button>
@@ -540,6 +543,7 @@
 				const tHeader = ['学生学号','学生姓名','学生预习成绩','学生操作成绩','学生报告成绩','学生总分'];
 				const filterVal = ['num','name','stuChoice','stuOperation','stuReport','stuAllScore'];
 				const list = this.users;
+				console.log(list,'list')
 				const data = this.formatJson(filterVal,list);
 				var classname = this.filters.classname;
 				var course = '';

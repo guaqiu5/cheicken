@@ -3,6 +3,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 use \QCloud_WeApp_SDK\Mysql\Mysql as DB;
 error_reporting(E_ALL&~E_NOTICE);
 
+class stuDetailItem{
+				var $expName;
+				var $stuChoice;
+				var $stuOperation;
+				var $stuReport;
+				var $stuAllScore;
+			}
+
 class Allinfo extends CI_Controller{
 
 	public function index(){
@@ -53,9 +61,9 @@ class Allinfo extends CI_Controller{
 					$stu[$key]->duration = $res2->duration;
 				}
 				// 计算实验报告总分 = 主观题总分 + 客观题总分
-				$subjectiveTotalScore = $this->getSubjectiveQuestionsScore($exid, $stu[$key]->id);
-				$objectiveTotalScore = $this->getObjectiveQuestionsScore($exid, $stu[$key]->id);
-				$stu[$key]->reportscore = $subjectiveTotalScore + $objectiveTotalScore;
+				// $subjectiveTotalScore = $this->getSubjectiveQuestionsScore($exid, $stu[$key]->id);
+				// $objectiveTotalScore = $this->getObjectiveQuestionsScore($exid, $stu[$key]->id);
+				$stu[$key]->reportscore = 60;
 				// 计算实验总分 = 预习测试题总分 * 30% + 操作得分 * 40% + 实验报告得分 * 30%
 				$stu[$key]->rationscore = 
 					$stu[$key]->score * $course->preparation / 100 
@@ -153,11 +161,15 @@ class Allinfo extends CI_Controller{
         // 存放最终学生信息的数组
         $stuResultInfos = array();
         // 遍历所有查询出的学生，并对有实验开课的学生作为返回结果，保存到 $stuResultInfos 中
+		// 所有的实验名数组
+
 		foreach ($stu as $key => $stuinfo) {
 			$stuChoice = 0;//学生总选择得分；
 			$stuOperation = 0;//学生总操作得分；
 			$stuReport = 0;//学生总报告得分；
 			$num = 0;//实验总加次数
+			$expNames = array();
+			$stuDetail  = array();
 			foreach ($experiment as $key1 => $experimentinfo) {
 				// 判断学生所在班级是否选了该课程实验
 				if($this->checkstr($experimentinfo->class,$stuinfo->class) == false){
@@ -185,7 +197,14 @@ class Allinfo extends CI_Controller{
 				$stuChoice += (int)$res1->score / $choice * 100;//百分制
 				$stuOperation += (int)$res2->operationscore;//本身就是百分制，不需要转化
 				$stuReport += $repotnum / $reportAllscore *100;//百分制
-
+				array_push($expNames,$experimentinfo->ename); //push实验名称
+				$item = new stuDetailItem;
+				$item->expName = $experimentinfo->ename;
+				$item->stuChoice = (int)$res1->score / $choice * 100;
+				$item->stuOperation = (int)$res2->operationscore;
+				$item->stuReport = $repotnum / $reportAllscore *100;
+				$item->stuAllScore = round($item->stuChoice * $course->preparation / 100 + $item->stuOperation * $course->operation / 100 + $item->stuReport * $course->report / 100, 2);
+				array_push($stuDetail, $item);
 				// var_dump($reportAllscore);//实验填写部分总分
 				// var_dump($choice);//选择部分总分
 				// var_dump($repotnum);//学生报告分数
@@ -196,6 +215,8 @@ class Allinfo extends CI_Controller{
 			if($num == 0){
 			    continue;
 			}
+			$stu[$key]->expNames = $expNames;
+			$stu[$key]->stuDetail = $stuDetail;
 			$stu[$key]->stuChoice = round($stuChoice / $num,2);
 			$stu[$key]->stuOperation = round($stuOperation / $num,2) ;
 			$stu[$key]->stuReport = round($stuReport / $num,2) ;
