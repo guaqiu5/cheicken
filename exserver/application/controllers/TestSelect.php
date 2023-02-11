@@ -118,7 +118,6 @@ class TestSelect extends CI_Controller{
         }
 
     }
-
     public function update(){
         $id = $_POST["id"];
         $topic = $_POST["topic"];
@@ -175,6 +174,42 @@ class TestSelect extends CI_Controller{
             ]);
         }
     }
+
+    public function swap(){
+        $id1 = $_POST["id1"];
+        $id2 = $_POST["id2"];
+        $temp1 = DB::select('exam',['*'],['id' => $id1]);
+        $temp2 = DB::select('exam',['*'],['id' => $id2]);
+        $temp3 = DB::select('examanswer',['*'],['examid' => $id1]);
+        $temp4 = DB::select('examanswer',['*'],['examid' => $id2]);
+        $ok1 = DB::update('exam',['id' => $id2,'topic' => $temp2[0]->topic,'correctAnswer' => $temp2[0]->correctAnswer,
+        'analysis' => $temp2[0]->analysis,'type' => $temp2[0]->type],['id'=>$id1]);
+        $ok2 = DB::update('exam',['id' => $id1,'topic' => $temp1[0]->topic,'correctAnswer' => $temp1[0]->correctAnswer,
+        'analysis' => $temp1[0]->analysis,'type' => $temp1[0]->type],['id'=>$id2]);
+        $ok3 = 0;
+        $ok4 = 0;
+        foreach ($temp3 as $key => $value) {
+            $ok3 = DB::update('examanswer',['examid' => $id2],['id' => $value->id]);
+        }
+        foreach ($temp4 as $key => $value) {
+            $ok4 = DB::update('examanswer',['examid' => $id1],['id' => $value->id]);
+        }
+        if($ok1 > 0 && $ok2 > 0 && $ok3 && $ok4){
+            $this->json([
+                'code' => 200,
+                'msg' =>  "交换成功",
+                'data' => [],
+            ]);
+        }else{
+             $this->json([
+                'code' => 201,
+                'msg' =>  "交换失败",
+                'data' => [],
+            ]);
+        }
+    }
+
+    
 
 }
 

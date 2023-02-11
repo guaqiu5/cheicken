@@ -760,8 +760,8 @@
 					      width="180"
 					      show-overflow-tooltip>
 					    </el-table-column>
-					    <el-table-column label="操作" width="150">
-					      <template slot-scope="scope">
+					    <el-table-column label="操作" width="300">
+					      <template slot-scope="scope" >
 					        <el-button
 					          size="mini"
 					          @click="handleTestSelectEdit(scope.row)">编辑</el-button>
@@ -769,6 +769,14 @@
 					          size="mini"
 					          type="danger"
 					          @click="handleTestSelectDelete(scope.row)">删除</el-button>
+                    <el-button
+                    v-if="scope.$index!==0"
+					          size="mini"
+					          @click="handleTestSelectUp(scope.row)">上移</el-button>
+                    <el-button
+                    v-if="scope.$index !== testDataLen - 1"
+					          size="mini"
+					          @click="handleTestSelectDown(scope.row)">下降</el-button>
 					      </template>
 					    </el-table-column>
 					  </el-table>
@@ -1168,6 +1176,7 @@ import {
   getAllExamSelect,
   updateExamSelect,
   deleteExamSelect,
+  swapExamSelect,
   removeExperiment,
   startExamSelect,
   getExperimentnameInfo,
@@ -2358,6 +2367,7 @@ export default {
       this.testManageLoading = true;
       getAllExamSelect(param).then((res) => {
         this.testManageData = res.data.data;
+        console.log(this.testManageData)
         this.testManageLoading = false;
       });
     },
@@ -2434,6 +2444,52 @@ export default {
             message: "已取消删除",
           });
         });
+    },
+    // 上移测试题
+    handleTestSelectUp(row) {
+      this.$confirm("此操作将上移该题目, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          const curIndex = this.testManageData.findIndex(item => item.id === row.id)
+          swapExamSelect({id1: row.id,id2: this.testManageData[curIndex-1].id}).then((res) => {
+            if (res.data.code === 200) {
+              this.$message({
+                message: res.data.msg,
+                type: "success",
+              });
+              this.dialogSelectFormVisible = false;
+              this.getAllExamSelects();
+            } else {
+              this.$message.error(res.data.msg);
+            }
+          });
+        })
+    },
+    // 下移测试题
+    handleTestSelectDown(row) {
+      this.$confirm("此操作将下降该题目, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          const curIndex = this.testManageData.findIndex(item => item.id === row.id)
+          swapExamSelect({id1: row.id,id2:this.testManageData[curIndex+1].id}).then((res) => {
+            if (res.data.code === 200) {
+              this.$message({
+                message: res.data.msg,
+                type: "success",
+              });
+              this.dialogSelectFormVisible = false;
+              this.getAllExamSelects();
+            } else {
+              this.$message.error(res.data.msg);
+            }
+          });
+        })
     },
     //打开页面
     start(row) {
@@ -2559,6 +2615,9 @@ export default {
           this.startForm.multi * this.startForm.multiCount) *
         0.6
       );
+    },
+    testDataLen: function() {
+      return this.testManageData.length
     },
   },
   mounted() {

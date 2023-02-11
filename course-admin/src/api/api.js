@@ -344,6 +344,19 @@ export const deleteExamSelect = params => {
     ); 
 };
 
+//交换选择题顺序
+export const swapExamSelect = params => { 
+	return axios.post(
+		`${base}/TestSelect/swap`,
+		Qs.stringify(params),
+		{
+	        headers: {
+	          'Content-Type': 'application/x-www-form-urlencoded'
+	        }
+      	}
+    ); 
+};
+
 //开始实验
 export const startExamSelect = params => { 
 	return axios.post(
